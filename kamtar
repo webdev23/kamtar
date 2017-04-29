@@ -1,0 +1,132 @@
+#!/usr/bin/php
+
+<?php
+#> php tc ping xterm speedtest-cli
+
+# Network simulation wrapper for tc 
+# Network as in real life to help making offline apps
+
+# usage: ./kamtar [2g|3g|country|mountain|ride|test] [test]
+# -----------------------------------------------------------------
+# [2g]       Simulate bad 2g
+#             [~5-15 Kbps, high pîng, packet loss]
+# [3g]       Simulate bad 3g
+#             [~0.5 Mbps, 200/300ms pîng, some packet loss]
+# [country]   Simulate 2g/3g in flat countryside areas
+#            [~0.3 Mbps, 600/800ms, packet loss, breakings]
+# [moutain]  Simulate 2g/3g in mountains area
+#             [0->0.5 Mbps, >1500ms ping, dns failures]
+# [ride]     Simulation while moving fast
+#             [~0/4 Mbps, 100/5000ms pîng, dns failures]
+# [test]     Launch speedtest and infinite ping
+#
+# Nico KraZhtest | 04/2017 | https://github.com/webdev23/kamtar
+
+$p2g = ["740ms", "2000ms", "800ms", "1500ms", "1900ms", "1980ms"];
+$p3g = ["180ms", "280ms", "140ms", "400ms", "330ms"];
+$country = ["480ms", "580ms", "5740ms", "440ms", "1200ms","3350ms","1780ms"];
+$mountain = ["1780ms", "1580ms", "1740ms", "1440ms", "1200ms","1935ms","1780ms"];
+$ride = ["480ms", "380ms", "240ms", "220ms", "570ms","1935ms","800ms"];
+
+echo "Network card ";
+$card = @system("/sbin/route -n | grep \"^0.0.0.0\" | rev | cut -d' ' -f1 | rev &");
+if ($card == "") {
+     echo "Not found";
+     system("ifconfig"); 
+}
+
+if (!isset($argv[1])) {
+    echo "usage: ./kamtar [2g|3g|country|mountain|ride|test] [test]\n";
+    echo "-----------------------------------------------------------------\n";
+    echo "[2g]       Simulate bad 2g\n";
+    echo "            [~5-15 Kbps, high pîng, packet loss] \n";
+    echo "[3g]       Simulate bad 3g \n";
+    echo "            [~0.5 Mbps, 200/300ms pîng, some packet loss] \n";
+    echo "[country]   Simulate 2g/3g in flat countryside areas\n";
+    echo "            [~0.3 Mbps, 600/800ms, packet loss, breakings]\n";
+    echo "[moutain]  Simulate 2g/3g in mountains area\n";
+    echo "            [0->0.5 Mbps, >1500ms ping, dns failures] \n";
+    echo "[ride]     Simulation while moving fast\n";
+    echo "            [~0/4 Mbps, 100/5000ms pîng, dns failures]\n";
+    echo "[test]     Launch speedtest tools\n";
+    @system("sudo tc qdisc del dev $card root netem");
+    echo "Switched off\n";
+    system("ping -w 2 speedtest.net | grep -oP '(time=).*'");
+    return;
+}
+    
+$me = basename(__FILE__);
+
+if (@$argv[1] == "test" || @$argv[2] == "test") {
+    @system("xterm -fn 6x10 -geometry 64x12-0+246 -fg red -bg 'rgb:00/00/11' -e \"speedtest-cli && echo Done;read\" > /dev/null &");
+    @system("xterm -fn 6x10 -geometry 64x24-0+0 -fg yellow -bg 'rgb:00/00/00' -e \"ping speedtest.net\" > /dev/null &");
+}
+
+
+if ($argv[1] == "2g") {
+    foreach($p2g as $ping):
+        echo system("sudo tc qdisc add dev $card root netem delay $ping");
+         usleep(500000);
+        system("ping -w 5 speedtest.net");
+        //~ system("curl -L -Is speedtest.net | grep HTTP | cut -d ' ' -f2");
+        @system("sudo tc qdisc del dev $card root netem");
+    endforeach;
+  system("./$me $argv[1]");
+}
+
+if ($argv[1] == "3g") {
+    foreach($p3g as $ping):
+        echo system("sudo tc qdisc add dev $card root netem delay $ping");
+        system("ping -w 1 speedtest.net");  
+         usleep(500000);
+        @system("sudo tc qdisc del dev $card root netem");
+    endforeach;
+  system("./$me $argv[1]");
+}
+
+if ($argv[1] == "country") {
+    foreach($country as $ping):
+        echo system("sudo tc qdisc add dev $card root netem delay $ping");
+        system("ping -w 3 speedtest.net");  
+         usleep(600000);
+        @system("sudo tc qdisc del dev $card root netem");
+    endforeach;
+  system("./$me $argv[1]");
+}
+
+if ($argv[1] == "mountain") {
+    foreach($mountain as $ping):
+        @system("sudo tc qdisc del dev $card root netem");
+        echo system("sudo tc qdisc add dev $card root netem delay $ping");
+        echo "\n";
+        system("ping -w 2 speedtest.net");  
+         usleep(6400000);
+        system("sudo ifconfig enp4s0 down");
+        system("ping -w 2 speedtest.net");  
+         usleep(14000000);
+        system("sudo ifconfig enp4s0 up");
+        system("ping -w 2 speedtest.net"); 
+        usleep(15000000);
+    endforeach;
+  system("./$me $argv[1]");
+}
+
+if ($argv[1] == "ride") {
+    foreach($ride as $ping):
+        @system("sudo tc qdisc del dev $card root netem");
+        echo system("sudo tc qdisc add dev $card root netem delay $ping");
+        system("ping -w 15 speedtest.net"); 
+        system("ping -w 15 speedtest.net"); 
+         usleep(13000000);
+        system("sudo ifconfig enp4s0 down");
+        system("ping -w 2 speedtest.net");  
+         usleep(50000000);
+        system("sudo ifconfig enp4s0 up");
+        system("ping -w 2 speedtest.net");  
+         usleep(35000000);
+    endforeach;
+  system("./$me $argv[1]");
+}
+
+
+
