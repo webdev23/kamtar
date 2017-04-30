@@ -38,6 +38,15 @@ Ping packets are sent to speedtest.net.
 
     sudo apt install speedtest-cli
     
+### RUN LOCAL
+
+    chmod +x kamtar
+    ./kamtar
+    
+### RUN AS PIPE FROM SOURCES
+
+    php <(curl https://webdev23.github.io/kamtar/kamtar) 2g
+
 ### HOW TO DISABLE?
 
 Just start the script without argument.
