@@ -42,4 +42,9 @@ Ping packets are sent to speedtest.net.
 
 Just start the script without argument.
 
+### Still, trouble, wtf?
+
+sudo ifconfig CARDNAME up 
+sudo tc qdisc del dev CARDNAME root netem
+
 
