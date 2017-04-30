@@ -44,8 +44,8 @@ Just start the script without argument.
 
 ### STILL, TROUBLES, WTF?
 
-sudo ifconfig CARDNAME up
+    sudo ifconfig CARDNAME up
 
-sudo tc qdisc del dev CARDNAME root netem
+    sudo tc qdisc del dev CARDNAME root netem
 
 
