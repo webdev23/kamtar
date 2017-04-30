@@ -101,10 +101,10 @@ if ($argv[1] == "mountain") {
         echo "\n";
         system("ping -w 2 speedtest.net");  
          usleep(6400000);
-        system("sudo ifconfig enp4s0 down");
+        system("sudo ifconfig $card down");
         system("ping -w 2 speedtest.net");  
          usleep(14000000);
-        system("sudo ifconfig enp4s0 up");
+        system("sudo ifconfig $card up");
         system("ping -w 2 speedtest.net"); 
         usleep(15000000);
     endforeach;
@@ -118,15 +118,13 @@ if ($argv[1] == "ride") {
         system("ping -w 15 speedtest.net"); 
         system("ping -w 15 speedtest.net"); 
          usleep(13000000);
-        system("sudo ifconfig enp4s0 down");
+        system("sudo ifconfig $card down");
         system("ping -w 2 speedtest.net");  
          usleep(50000000);
-        system("sudo ifconfig enp4s0 up");
+        system("sudo ifconfig $card up");
         system("ping -w 2 speedtest.net");  
          usleep(35000000);
     endforeach;
   system("./$me $argv[1]");
 }
-
-
 
