@@ -21,7 +21,7 @@ usage: ./kamtar [2g|3g|country|mountain|ride|test] [test]
 
 Web workers in browsers can detect and switch scripts to keep the page running while offline.
 
-While debugers in browsers can throttle connexions, they can't switch off the network.
+While debugers in browsers can throttle down connexions, they can't switch off the network.
 
 This is a helper script intented to help to write offline switching apps.
 
